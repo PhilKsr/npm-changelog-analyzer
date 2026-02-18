@@ -23,9 +23,10 @@ body {
   background: var(--background);
   color: var(--foreground);
   font-family: var(--font-geist-sans), system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-  line-height: 1.5;
+  line-height: 1.6;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  font-size: 14px;
 }
 
 /* Improve text rendering */
@@ -88,4 +89,37 @@ body {
   display: -webkit-box;
   -webkit-box-orient: vertical;
   -webkit-line-clamp: 2;
+}
+
+/* Markdown styling for changelog content */
+.markdown-changelog h1,
+.markdown-changelog h2,
+.markdown-changelog h3,
+.markdown-changelog h4,
+.markdown-changelog h5,
+.markdown-changelog h6 {
+  margin-top: 0;
+  margin-bottom: 0.5rem;
+}
+
+.markdown-changelog p {
+  margin-bottom: 0.75rem;
+}
+
+.markdown-changelog ul,
+.markdown-changelog ol {
+  margin-bottom: 0.75rem;
+  padding-left: 1rem;
+}
+
+.markdown-changelog li {
+  margin-bottom: 0.25rem;
+}
+
+.markdown-changelog code {
+  font-size: 0.875rem;
+}
+
+.markdown-raw {
+  font-family: ui-monospace, SFMono-Regular, "SF Mono", Consolas, "Liberation Mono", Menlo, monospace;
 }

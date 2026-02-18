@@ -34,6 +34,8 @@ export enum ChangelogFormat {
 
 export class IntelligentVersionParser {
   private static VERSION_PATTERNS = [
+    // Essencium/GitHub releases format: ## [9.4.4](https://github.com/...) (2025-09-09)
+    /^(#+)\s*\[([^\]]+)\]\([^)]*\)\s*\(([^)]+)\)$/,
     // Keep a Changelog format: ## [1.0.0] - 2023-05-15
     /^(#+)\s*\[([^\]]+)\]\s*-\s*(.+)$/,
     // Monorepo/prefixed format: ## [package-name-v1.0.0] - 2023-05-15
@@ -126,10 +128,14 @@ export class IntelligentVersionParser {
         const { version, date, headerLevel } = versionMatch;
         const semanticVersion = this.parseSemanticVersion(version);
         
-        // If we already have a current block with the same version, skip this duplicate header
+        // If we already have a current block with the same version, treat this as content
+        // This handles cases where there are multiple headers for the same version
         if (currentBlock && currentBlock.semanticVersion?.raw === semanticVersion.raw) {
-          currentContent.push(line);
-          continue;
+          // Only skip if this header is at a deeper level (more #'s) than current block header
+          if (headerLevel > (currentBlock.headerLevel || 2)) {
+            currentContent.push(line);
+            continue;
+          }
         }
         
         // Save the previous block if it exists
@@ -192,10 +198,14 @@ export class IntelligentVersionParser {
         let dateStr = '';
 
         if (pattern === this.VERSION_PATTERNS[0]) {
+          // Essencium/GitHub releases format: ## [9.4.4](https://github.com/...) (2025-09-09)
+          version = match[2];
+          dateStr = match[3];
+        } else if (pattern === this.VERSION_PATTERNS[1]) {
           // Keep a Changelog format
           version = match[2];
           dateStr = match[3];
-        } else if (pattern === this.VERSION_PATTERNS[5]) {
+        } else if (pattern === this.VERSION_PATTERNS[7]) {
           // Date first format
           dateStr = match[2];
           version = match[3];
@@ -281,17 +291,19 @@ export class IntelligentVersionParser {
     
     const headerLevel = headerMatch[1].length;
     
-    // Only consider it a section break if it's at a higher level (lower number) than current level
+    // Only consider it a section break if it's at a higher level (fewer #'s) than current level
     // OR if it's the same level AND it matches a version pattern (indicating a new version section)
     if (headerLevel < currentLevel) {
       return true;
     }
     
     if (headerLevel === currentLevel) {
-      // Check if this line is a version header
-      return this.matchVersionHeader(line) !== null;
+      // Check if this line is a version header for a different version
+      const versionMatch = this.matchVersionHeader(line);
+      return versionMatch !== null;
     }
     
+    // Allow deeper headers (more #'s) to be part of the content
     return false;
   }
 

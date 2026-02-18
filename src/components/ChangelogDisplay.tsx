@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { marked } from 'marked';
+import MarkdownRenderer from './MarkdownRenderer';
 
 interface ChangelogEntry {
   version: string;
@@ -38,6 +38,16 @@ interface ChangelogDisplayProps {
   packageName: string;
   startVersion: string;
   endVersion: string;
+}
+
+interface ChangelogSectionProps {
+  title: string;
+  items: ChangelogEntry[];
+  icon: React.ReactNode;
+  emptyMessage: string;
+  bgColor: string;
+  borderColor: string;
+  priority?: boolean;
 }
 
 export default function ChangelogDisplay({
@@ -189,14 +199,6 @@ export default function ChangelogDisplay({
     return null;
   }
 
-  const parseMarkdownContent = async (content: string): Promise<string> => {
-    try {
-      const html = await marked(content);
-      return html;
-    } catch {
-      return content;
-    }
-  };
 
   const formatContent = (content: string): string => {
     const cleanContent = content
@@ -231,15 +233,7 @@ export default function ChangelogDisplay({
     bgColor,
     borderColor,
     priority = false
-  }: {
-    title: string;
-    items: ChangelogEntry[];
-    icon: React.ReactNode;
-    emptyMessage: string;
-    bgColor: string;
-    borderColor: string;
-    priority?: boolean;
-  }) => (
+  }: ChangelogSectionProps) => (
     <div className={`${bgColor} border ${borderColor} rounded-xl shadow-sm overflow-hidden ${priority ? 'ring-2 ring-offset-2 ring-offset-white dark:ring-offset-gray-900 ring-red-200 dark:ring-red-800' : ''}`}>
       <div className="p-6">
         <div className="flex items-center justify-between mb-4">
@@ -292,9 +286,9 @@ export default function ChangelogDisplay({
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-start justify-between mb-2">
-                        <p className="text-gray-900 dark:text-gray-100 text-sm leading-relaxed font-medium group-hover:text-gray-700 dark:group-hover:text-gray-200">
-                          {formattedContent}
-                        </p>
+                        <div className="text-gray-900 dark:text-gray-100 text-sm leading-relaxed group-hover:text-gray-700 dark:group-hover:text-gray-200">
+                          <MarkdownRenderer content={item.content} className="markdown-changelog" />
+                        </div>
                       </div>
                       
                       <div className="flex items-center space-x-2 text-xs">
@@ -571,9 +565,9 @@ export default function ChangelogDisplay({
                   Copy
                 </button>
               </div>
-              <pre className="overflow-x-auto text-sm text-gray-800 dark:text-gray-200 whitespace-pre-wrap leading-relaxed max-h-96 overflow-y-auto">
-                {changelog.raw}
-              </pre>
+              <div className="overflow-x-auto text-sm text-gray-800 dark:text-gray-200 leading-relaxed max-h-96 overflow-y-auto">
+                <MarkdownRenderer content={changelog.raw} className="markdown-raw" />
+              </div>
             </div>
           </div>
         </details>
