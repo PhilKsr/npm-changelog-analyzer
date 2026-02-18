@@ -59,6 +59,7 @@ class RateLimiter {
 }
 
 export const apiRateLimiter = new RateLimiter(60, 60000);
+export const rateLimiter = apiRateLimiter; // Alias for backward compatibility
 
 export function getRateLimitHeaders(remainingRequests: number, resetTime: number) {
   return {
